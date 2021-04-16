@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div id="app">
+        <div class="container">
+
+            <h1 class="text-center text-dark pt-5">MONSTER SLAYER</h1>
+            <h4 class="text-center text-secondary pb-5">Prepare yourself for an epic battle</h4>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12">
+                    <section class="card mt-3">
+                        <div class="card-header">
+                            <h3 class="text-center text-dark">MONSTER HEALTH</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                                    :style="{width: monsterHealth + '%'}"></div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="col-md-6 col-sm-12">
+                    <section class="card mt-3">
+                        <div class="card-header">
+                            <h3 class="text-center text-dark">YOUR HEALTH</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                                    :style="{width: playerHealth + '%'}"></div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <section class="card mt-3" v-if="winner">
+                <h1 class="text-center text-dark">GAME OVER!</h1>
+                <h3 v-if="winner === 'monster'" class="text-center text-dark">YOU LOST!</h3>
+                <h3 v-else-if="winner === 'player'" class="text-center text-dark">YOU WON!</h3>
+                <h3 v-else class="text-center text-dark">IT'S A DRAW!</h3>
+                <button class="btn btn-primary" @click="reset">NEW GAME</button>
+            </section>
+
+            <section class="card mt-3" v-else>
+                <div class="card-body d-flex justify-content-center">
+                    <button class="btn btn-primary mr-2" @click="attackMonster">ATTACK</button>
+                    <button class="btn btn-primary mr-2" :disabled="enableSpecialAttack" @click="specialAttack">SPECIAL
+                        ATTACK</button>
+                    <button class="btn btn-primary mr-2" @click="healPlayer">HEAL</button>
+                    <button class="btn btn-primary mr-2" @click="surrender">SURRENDER</button>
+                </div>
+            </section>
+
+            <section class="card mt-3">
+                <div class="card-header">
+                    <h3 class="text-center text-dark">BATTLE LOG</h3>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li v-for="currentlyMessage in logMessages" :key="currentlyMessage">
+                            <span class="badge" :class="currentlyMessage.actionBy === 'monster' ? 'badge-danger' : 'badge-primary'">{{ currentlyMessage.actionBy }} - {{ currentlyMessage.actionType }} - {{
+                                currentlyMessage.actionValue }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@next"></script>
+
+    <script>
+        const getDamage = (min, max) => {
+            if ((max - min) > 0) {
+                return Math.floor(Math.random() * (max - min)) + min
+            }
+        }
+
+        const getHealValue = getDamage
+
+        Vue.createApp({
+            data() {
+                return {
+                    monsterHealth: 100,
+                    playerHealth: 100,
+                    round: 0,
+                    winner: null,
+                    logMessages: []
+                }
+            },
+            methods: {
+                attackMonster() {
+                    const attackValue = getDamage(1, 8)
+                    this.monsterHealth -= attackValue
+                    this.round++
+
+                    this.addLogMessage('player', 'attack', attackValue)
+                    this.attackPlayer()
+                },
+                attackPlayer() {
+                    const attackValue = getDamage(1, 10)
+                    this.playerHealth -= attackValue
+
+                    this.addLogMessage('monster', 'attack', attackValue)
+                },
+                specialAttack() {
+                    const attackValue = getDamage(1, 13)
+                    this.monsterHealth -= attackValue
+                    this.round++
+
+                    this.addLogMessage('player', 'attack', attackValue)
+                    this.attackPlayer()
+                },
+                healPlayer() {
+                    const healValue = getHealValue(1, 6)
+
+                    if (this.playerHealth + healValue > 100) {
+                        this.playerHealth = 100
+
+                    } else {
+                        this.playerHealth += healValue
+                    }
+
+                    this.addLogMessage('player', 'heals', healValue)
+                    this.attackPlayer()
+                },
+                reset() {
+                    this.playerHealth = 100
+                    this.monsterHealth = 100
+                    this.round = 0
+                    this.winner = null
+                    this.logMessages = []
+                },
+                surrender() {
+                    this.addLogMessage('player', 'surrenders', 0)
+                    this.winner = 'monster'
+                },
+                addLogMessage(who, what, value) {
+                    this.logMessages.unshift({
+                        actionBy: who,
+                        actionType: what,
+                        actionValue: value
+                    })
+                }
+            },
+            computed: {
+                enableSpecialAttack() {
+                    return this.round % 3 !== 0
+                }
+            },
+            watch: {
+                playerHealth(value) {
+                    if (value <= 0 && this.monsterHealth <= 0) {
+                        this.winner = 'draw'
+
+                    } else if (value <= 0) {
+                        this.winner = 'monster'
+                    }
+                },
+                monsterHealth(value) {
+                    if (value <= 0 && this.playerHealth <= 0) {
+                        this.winner = 'draw'
+
+                    } else if (value <= 0) {
+                        this.winner = 'player'
+                    }
+                }
+            },
+        }).mount('#app')
+    </script>
+</body>
+
+</html>
