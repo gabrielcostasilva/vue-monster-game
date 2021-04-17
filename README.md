@@ -8,6 +8,8 @@ Both Vue and Bootstrap are used via CDN. This project is structured in one singl
 ## Features of This Branch
 This branch features Vue 3 composition API. Notice that we deconstructed Vue object using a const instead of an import, as usual when using vue-cli.
 
+[This tutorial](https://www.vuemastery.com/blog/vue-3-start-using-it-today/) helped me to use the Vue 3 composition API on a single HTML file.
+
 ## Project Overview
 
 ### Main Screen
