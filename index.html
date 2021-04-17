@@ -84,6 +84,8 @@
     <script src="https://unpkg.com/vue@next"></script>
 
     <script>
+        const { createApp, ref, computed, watch } = Vue
+
         const getDamage = (min, max) => {
             if ((max - min) > 0) {
                 return Math.floor(Math.random() * (max - min)) + min
@@ -92,94 +94,110 @@
 
         const getHealValue = getDamage
 
-        Vue.createApp({
-            data() {
-                return {
-                    monsterHealth: 100,
-                    playerHealth: 100,
-                    round: 0,
-                    winner: null,
-                    logMessages: []
-                }
-            },
-            methods: {
-                attackMonster() {
+        createApp({
+            setup() {
+                const monsterHealth = ref(100)
+                const playerHealth = ref(100)
+                const round = ref(0)
+                const winner = ref(null)
+                const logMessages = ref([])
+
+                const attackMonster = () => {
                     const attackValue = getDamage(1, 8)
-                    this.monsterHealth -= attackValue
-                    this.round++
+                    monsterHealth.value -= attackValue
+                    round.value++
 
-                    this.addLogMessage('player', 'attack', attackValue)
-                    this.attackPlayer()
-                },
-                attackPlayer() {
+                    addLogMessage('player', 'attack', attackValue)
+                    attackPlayer()
+                }
+
+                const attackPlayer = () => {
                     const attackValue = getDamage(1, 10)
-                    this.playerHealth -= attackValue
+                    playerHealth.value -= attackValue
 
-                    this.addLogMessage('monster', 'attack', attackValue)
-                },
-                specialAttack() {
+                    addLogMessage('monster', 'attack', attackValue)
+                }
+
+                const specialAttack = () => {
                     const attackValue = getDamage(1, 13)
-                    this.monsterHealth -= attackValue
-                    this.round++
+                    monsterHealth.value -= attackValue
+                    round.value++
 
-                    this.addLogMessage('player', 'attack', attackValue)
-                    this.attackPlayer()
-                },
-                healPlayer() {
+                    addLogMessage('player', 'attack', attackValue)
+                    attackPlayer()
+                }
+
+                const healPlayer = () => {
                     const healValue = getHealValue(1, 6)
 
-                    if (this.playerHealth + healValue > 100) {
-                        this.playerHealth = 100
+                    if (playerHealth.value + healValue > 100) {
+                        playerHealth.value = 100
 
                     } else {
-                        this.playerHealth += healValue
+                        playerHealth.value += healValue
                     }
 
-                    this.addLogMessage('player', 'heals', healValue)
-                    this.attackPlayer()
-                },
-                reset() {
-                    this.playerHealth = 100
-                    this.monsterHealth = 100
-                    this.round = 0
-                    this.winner = null
-                    this.logMessages = []
-                },
-                surrender() {
-                    this.addLogMessage('player', 'surrenders', 0)
-                    this.winner = 'monster'
-                },
-                addLogMessage(who, what, value) {
-                    this.logMessages.unshift({
+                    addLogMessage('player', 'heals', healValue)
+                    attackPlayer()
+                }
+
+                const reset = () => {
+                    playerHealth.value = 100
+                    monsterHealth.value = 100
+                    round.value = 0
+                    winner.value = null
+                    logMessages.value = []
+                }
+
+                const surrender = () => {
+                    addLogMessage('player', 'surrenders', 0)
+                    winner.value = 'monster'
+                }
+
+                const addLogMessage = (who, what, value) => {
+                    logMessages.value.unshift({
                         actionBy: who,
                         actionType: what,
                         actionValue: value
                     })
                 }
-            },
-            computed: {
-                enableSpecialAttack() {
-                    return this.round % 3 !== 0
-                }
-            },
-            watch: {
-                playerHealth(value) {
-                    if (value <= 0 && this.monsterHealth <= 0) {
-                        this.winner = 'draw'
+
+                const enableSpecialAttack = computed(() => {
+                    return round.value % 3 !== 0
+                })
+
+                watch(playerHealth, (value) => {
+                    if (value <= 0 && monsterHealth.value <= 0) {
+                        winner.value = 'draw'
 
                     } else if (value <= 0) {
-                        this.winner = 'monster'
+                        winner.value = 'monster'
                     }
-                },
-                monsterHealth(value) {
-                    if (value <= 0 && this.playerHealth <= 0) {
-                        this.winner = 'draw'
+                })
+
+                watch(monsterHealth, (value) => {
+                    if (value <= 0 && playerHealth.value <= 0) {
+                        winner.value = 'draw'
 
                     } else if (value <= 0) {
-                        this.winner = 'player'
+                        winner.value = 'player'
                     }
+                })
+
+                return {
+                    monsterHealth,
+                    playerHealth,
+                    winner,
+                    logMessages,
+
+                    attackMonster,
+                    specialAttack,
+                    healPlayer,
+                    reset,
+                    surrender,
+                    enableSpecialAttack
                 }
-            },
+            }
         }).mount('#app')
     </script>
 </body>

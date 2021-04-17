@@ -5,6 +5,9 @@ This project uses Vue 3 although the main branch uses Vue 2 structure, as in the
 
 Both Vue and Bootstrap are used via CDN. This project is structured in one single HTML page as the main goal is just showing off main Vue features.
 
+## Features of This Branch
+This branch features Vue 3 composition API. Notice that we deconstructed Vue object using a const instead of an import, as usual when using vue-cli.
+
 ## Project Overview
 
 ### Main Screen
