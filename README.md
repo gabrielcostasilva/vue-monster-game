@@ -25,7 +25,7 @@ The _player_ can `surrender`. This ends the game immediately. The _battle log_ r
 
 This component registers every move from players. The _monster_ moves are shown in red whereas the _player_ moves are shown in blue.
 
-### Removing Existing TODO
+### Game over component
 
 <img src="./pics/GameOver.png" />
 
